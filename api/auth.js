@@ -1,17 +1,22 @@
 const router = require('express').Router()
 const { check, validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')
+const { validEmail } = require('../util/regex')
 
 // @route   POST /api/v1/auth
 // @desc    Login route
 // @access  Public
 router.post('/', [
-    check('email', 'Email is Required').isEmail(),
+    check('email', 'Email is Required').exists(),
     check('password', 'Password is Required').isLength({ min: 6, max: 40 }),
 ], async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array() })
+    }
+
+    if(!validEmail.test(req.body.email)) {
+        return res.status(400).json({ err: 'Email must be valid' })
     }
 
     try {
