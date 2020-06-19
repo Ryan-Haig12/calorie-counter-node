@@ -119,40 +119,56 @@ router.post('/create', [
 // @access  Public
 router.put('/update/:userId', [
     check('email', 'Email is not valid').isEmail().optional(),
-    check('password', 'Password is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }).optional()
+    check('username', 'Username is not valid').optional(),
+    check('password', 'Password is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }).optional(),
+    check('password2', 'Password2 is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }).optional()
 ], async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array() })
     }
+
     const { db, body, params } = req
+
+    if(!body.email && !body.password && !body.username) {
+        return res.status(400).json({ err: 'Need to pass in at least one email, password, or username' })
+    }
+
+    if(body.password && !body.password2) {
+        return res.status(400).json({ err: 'Need to pass in password2 as well' })
+    }
 
     // if userId is not a valid uuid, throw an error
     if(!validUUID.test(params.userId)) {
-        response.status = 400
-        response.body = { error: `userId ${ params.userId } is not a valid UUID` }
-        return
+        return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
     }
 
     const user = await db.query(`select * from users where id = '${ params.userId }' `)
-    if(!user.rows[0]) res.status(404).json({ err: `User ${ params.userId } not found` })
+    if(!user.rows[0]) return res.status(404).json({ err: `User ${ params.userId } not found` })
 
     // if email exists, return an error
-    const emailExists = await db.query(`select * from users where email = '${ body.email }'`)
-    if(emailExists.rows.length) {
-        return res.status(400).json({ err: `Email ${ body.email } already in use` })
+    if(body.email) {
+        const emailExists = await db.query(`select * from users where email = '${ body.email }'`)
+        if(emailExists.rows.length) return res.status(400).json({ err: `Email ${ body.email } already in use` })
     }
-
+    
     // if username exists, return an error
-    const usernameExists = await db.query(`select * from users where username = '${ body.username }'`)
-    if(usernameExists.rows.length) {
-        return res.status(400).json({ err: `Username ${ body.username } already in use` })
+    if(body.username) {
+        const usernameExists = await db.query(`select * from users where username = '${ body.username }'`)
+        if(usernameExists.rows.length) {
+            return res.status(400).json({ err: `Username ${ body.username } already in use` })
+        }
     }
+    
 
     // append all arguments into a query body
     let queryBody = ''
     if(body.username) queryBody += `username = '${ body.username }'`
     if(body.password) {
+        if(body.password != body.password2) {
+            return res.status(400).json({ err: `Passwords need to match` })
+        }
+
         if(body.username) queryBody += ', '
         // hash password for db storage
         const salt = await bcrypt.genSalt(8)
@@ -176,6 +192,11 @@ router.put('/update/:userId', [
 // @desc    Update a user
 // @access  Public
 router.delete('/delete/:userId', async ({ db, params }, res) => {
+    // if userId is not a valid uuid, throw an error
+    if(!validUUID.test(params.userId)) {
+        return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
+    }
+
     const data = await db.query(`select * from users where id = '${ params.userId }' `)
     // if user is not found, return error
     if(!data.rows.length) res.status(404).json({ err: `User ${ params.userId } not found` })

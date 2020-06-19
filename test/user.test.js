@@ -3,12 +3,21 @@ const axios = require('axios')
 const { validUUID, validEmail, alphaNumerical } = require('../util/regex')
 
 const URL = 'http://localhost:4000/api/v1/users'
+const AUTH_URL = 'http://localhost:4000/api/v1/auth'
+
 const userData = {
     username: 'Test User',
     email: 'test@test.com',
     password: 'password',
     password2: 'password'
 }
+const newUserData = {
+    username: 'A New User',
+    email: 'testguy@test.com',
+    password: 'newPassword',
+    password2: 'newPassword'
+}
+let userId = ''
 
 describe('GET /api/v1/users/id/:userId', () => {
     test('should return an error when an invalid UUID is passed in', async () => {
@@ -178,6 +187,157 @@ describe('POST /api/v1/users/create', () => {
             expect(password).toBe(undefined)
             expect(validEmail.test(email)).toBe(true)
             expect(email).toBe(userData.email)
+            expect(createdOn > '2020-01-01').toBe(true)
+            expect(validUUID.test(authtoken)).toBe(true)
+
+            // set the userId up so that this user can be deleted below
+            userId = id
+        } catch(err) {
+            console.log('i hope you don\'t ever see this', err)
+        }
+    })
+})
+
+describe('PUT /api/v1/users/update/:userId', () => {
+    test('should return an error if the userID is not a valid uuid', async () => {
+        try {
+            await axios.put(URL + '/update/84612c93-20b2', userData)
+        } catch(err) {
+            expect(err.response.data.err).toBe('userId 84612c93-20b2 is not a valid UUID')
+        }
+    })
+
+    test('should return an error if new data is not passed in', async () => {
+        try {
+            await axios.put(URL + '/update/84612c93-20b2-41d9-a8da-b96728710aad', {})
+        } catch(err) {
+            expect(err.response.data.err).toBe('Need to pass in at least one email, password, or username')
+        }
+    })
+
+    test('should return an error if the userId is not found', async () => {
+        try {
+            await axios.put(URL + '/update/84612c93-20b2-41d9-a8da-b96728710ccc', userData)
+        } catch(err) {
+            expect(err.response.data.err).toBe('User 84612c93-20b2-41d9-a8da-b96728710ccc not found')   
+        }
+    })
+
+    test('should return an error if the new email is already in use', async () => {
+        try {
+            await axios.put(URL + `/update/${ userId }`, { email: 'haigryan@gmail.com' })
+        } catch(err) {
+            expect(err.response.data.err).toBe('Email haigryan@gmail.com already in use')
+        }
+    })
+
+    test('should return an error if the new username is already in use', async () => {
+        try {
+            await axios.put(URL + `/update/${ userId }`, { username: 'HaigRyan' })
+        } catch(err) {
+            expect(err.response.data.err).toBe('Username HaigRyan already in use')
+        }
+    })
+
+    test('should return an error if password is passed in and password2 is not', async () => {
+        try {
+            await axios.put(URL + `/update/${ userId }`, { password: newUserData.password })
+        } catch(err) {
+            expect(err.response.data.err).toBe('Need to pass in password2 as well')
+        }
+    })
+
+    test('should return an error if password and password2 do not match', async () => {
+        try {
+            await axios.put(URL + `/update/${ userId }`, { password: newUserData.password, password2: 'goNuggets15' })
+        } catch(err) {
+            expect(err.response.data.err).toBe('Passwords need to match')
+        }
+    })
+
+    test('should update the user if only a username, password, or email is passed in', async () => {
+        try {
+            const res = await axios.put(URL + `/update/${ userId }`, { password: 'newPassword', password2: 'newPassword' })
+            
+            const { id, username, email, createdOn, authtoken, password } = res.data
+            expect(id).toBe(userId)
+            expect(username).toBe(userData.username)
+            expect(email).toBe(userData.email)
+            expect(password).toBe(undefined)
+            expect(createdOn > '2020-01-01').toBe(true)
+            expect(validUUID.test(authtoken)).toBe(true)
+        } catch(err) {
+            console.log('i hope you don\'t ever see this', err)
+        }
+    })
+
+    test('should update the user if all new data is passed in', async () => {
+        try {
+            const res = await axios.put(URL + `/update/${ userId }`, newUserData)
+
+            const { id, username, email, createdOn, authtoken, password } = res.data
+
+            expect(id).toBe(userId)
+            expect(username).toBe(newUserData.username)
+            expect(email).toBe(newUserData.email)
+            expect(password).toBe(undefined)
+            expect(createdOn > '2020-01-01').toBe(true)
+            expect(validUUID.test(authtoken)).toBe(true)
+        } catch(err) {
+            console.log('i hope you don\'t ever see this', err.response.data)
+        }
+    })
+
+    test('should return an error if the old password is used on login', async () => {
+        try {
+            await axios.post(AUTH_URL, { password: userData.password, email: userData.email })
+        } catch(err) {
+            console.log('i hope you don\'t ever see this', err)
+        }
+    })
+
+    test('should be able to log the user in with their new creds', async () => {
+        try {
+            const res = await axios.post(AUTH_URL, { password: newUserData.password, email: newUserData.email })
+            
+            const { id, username, email, created_on, authtoken } = res.data
+            
+            expect(id).toBe(userId)
+            expect(username).toBe(newUserData.username)
+            expect(email).toBe(newUserData.email)
+            expect(created_on > '2020-01-01').toBe(true)
+            expect(validUUID.test(authtoken)).toBe(true)
+        } catch(err) {
+            console.log('i hope you don\'t ever see this', err)
+        }
+    })
+})
+
+describe('DELETE /api/v1/users/delete/:userId', () => {
+    test('should return an error if the userID is not a valid uuid', async () => {
+        try {
+            await axios.delete(URL + '/delete/12345')
+        } catch(err) {
+            expect(err.response.data.err).toBe('userId 12345 is not a valid UUID')
+        }
+    })
+
+    test('should return an error if the user is not found', async () => {
+        try {
+            await axios.delete(URL + '/delete/e49ad339-244b-4264-8759-492736e71914')
+        } catch(err) {
+            expect(err.response.data.err).toBe('User e49ad339-244b-4264-8759-492736e71914 not found')
+        }
+    })
+
+    test('should delete a user', async () => {
+        try {
+            const res = await axios.delete(URL + `/delete/${ userId }`)
+
+            const { id, username, email, createdOn, authtoken } = res.data
+            expect(id).toBe(userId)
+            expect(username).toBe(newUserData.username)
+            expect(email).toBe(newUserData.email)
             expect(createdOn > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
         } catch(err) {
