@@ -37,7 +37,7 @@ router.post('/', [
             return
         }
 
-        data.rows[0].password = undefined
+        if(data.rows.length) data.rows[0].password = undefined
 
         res.status(200).json(data.rows[0])
     } catch(err) {

@@ -20,7 +20,7 @@
   },
   "scripts": {
     "server": "nodemon server.js",
-    "test": "jest --verbose --env=node ./test/*.test.js"
+    "test": "clear && jest --verbose --env=node ./test/*.test.js"
   },
   "author": "",
   "license": "ISC"

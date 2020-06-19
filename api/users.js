@@ -10,21 +10,18 @@ const { validUUID } = require('../util/regex')
 router.get('/id/:userId', async ({ db, params }, res) => {
     // if userId is not a valid uuid, throw an error
     if(!validUUID.test(params.userId)) {
-        res.status = 400
-        res.json({ err: `userId ${ params.userId } is not a valid UUID` })
-        return
+        return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
     }
 
     const data = await db.query(`select * from users where id = '${ params.userId }'`)
 
     if(!data.rows[0]) {
-        res.status = 404
-        res.json({ err: `User ${ params.userId } not found` })
+        return res.status(200).json({ err: `User ${ params.userId } not found` })
     }
 
-    data.rows[0].password = undefined
+    if(data.rows.length) data.rows[0].password = undefined
 
-    res.status.json(data.rows[0])
+    res.status(200).json(data.rows[0])
 })
 
 // @route   GET /api/v1/users/userName/:userName
@@ -34,11 +31,10 @@ router.get('/userName/:userName', async ({ db, params }, res) => {
     const data = await db.query(`select * from users where username ilike '${ params.userName }'`)
 
     if(!data.rows[0]) {
-        res.status = 404
-        res.json({ err: `User ${ params.userName } not found` })
+        res.status(200).json({ err: `User ${ params.userName } not found` })
     }
 
-    data.rows[0].password = undefined
+    if(data.rows.length) data.rows[0].password = undefined
 
     res.status(200).json(data.rows[0])
 })
@@ -49,13 +45,15 @@ router.get('/userName/:userName', async ({ db, params }, res) => {
 router.get('/allData/:userId', async ({ db, params }, res) => {
     // if userId is not a valid uuid, throw an error
     if(!validUUID.test(params.userId)) {
-        res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
+        return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
     }
 
     const userData = await db.query(`select * from users where id = '${ params.userId }'`)
     if(!userData.rows[0]) {
-        res.status(404).json({ err: `User ${ params.userId } not found` })
+        return res.status(404).json({ err: `User ${ params.userId } not found` })
     }
+
+    if(userData.rows.length) userData.rows[0].password = undefined
 
     const caloryData = await db.query(`select * from calorieLog where userid = '${ params.userId }' `)
     const exerciseData = await db.query(`select * from exerciseLog where userid = '${ params.userId }' `)
@@ -95,7 +93,9 @@ router.post('/create', [
     }
 
     // if passwords do not match, return an error
-    if(body.password != body.password2) response.status(400).json({ err: 'passwords must match' })
+    if(body.password != body.password2) {
+        return res.status(400).json({ err: 'passwords must match' })
+    }
 
     // hash password for db storage
     const salt = await bcrypt.genSalt(8)

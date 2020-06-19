@@ -4,7 +4,7 @@ const { validUUID, validEmail } = require('../util/regex')
 
 const URL = 'http://localhost:4000/api/v1/auth'
 
-describe('/api/v1/auth', () => {
+describe('POST /api/v1/auth', () => {
     test('should return an error when no data is sent', async () => {
         try {
             await axios.post(URL)

@@ -9,10 +9,18 @@ const querySanitizer = async (req, res, next) => {
         // alphaNumerical is to ensure *, ^, =, ", etc do not appear in the value
         // twoDashesInRow  is to ensure dashes dashes do not appear twice in a row, preventing the rest of the query from being commented out
         if(!alphaNumerical.test(term) || !twoDashesInRow.test(term)) {
-            error = `"${ term }" is unacceptable`
+            error = `"${ term }" body param is unacceptable`
             flag = false
         }
     }
+
+    // ensure query params are fine as well
+    req.path.split('/').map(param => {
+        if(param.length && (!alphaNumerical.test(param) || !twoDashesInRow.test(param))) {
+            error = `"${ param }" query param is unacceptable`
+            flag = false
+        }
+    })
 
     if(flag) {
         await next()
