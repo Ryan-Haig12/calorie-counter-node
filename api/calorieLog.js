@@ -65,7 +65,7 @@ router.get('/user/:userId', async ({ db, params }, res) => {
 router.get('/log/:logId', async ({ db, params }, res) => {
     // if logId is not a valid uuid, throw an error
     if(!validUUID.test(params.logId)) {
-        return res.status(400).json({ err: `userId ${ params.logId } is not a valid UUID` })
+        return res.status(400).json({ err: `logId ${ params.logId } is not a valid UUID` })
     }
 
     const log = await db.query(`select * from calorielog where logId = '${ params.logId }' `)
@@ -91,7 +91,11 @@ router.put('/log/:logId', [
     const { db, body, params } = req
 
     if(!validUUID.test(params.logId)) {
-        return res.status(400).json({ err: `userId ${ params.logId } is not a valid UUID` })
+        return res.status(400).json({ err: `logId ${ params.logId } is not a valid UUID` })
+    }
+
+    if(!body.food && !body.calories) {
+        return res.status(400).json({ err: 'need to pass in at least food or calories' })
     }
 
     // update the log
@@ -137,10 +141,10 @@ router.delete('/log/:logId', async ({ db, params }, res) => {
     `)
 
     if(!deletedLog.rows.length) {
-        return res.status(404).json({ err: `No calorieLogs found for id ${ params.logId }` })
+        return res.status(404).json({ err: `No calorieLogs found for logId ${ params.logId }` })
     }
 
-    res.status(200).json(deletedLog.rows)
+    res.status(200).json(deletedLog.rows[0])
 })
 
 // @route   GET /api/v1/calories/daterange/:begin/:end
@@ -157,6 +161,10 @@ router.get('/daterange/:begin/:end', async ({ db, params }, res) => {
 
     const logs = await db.query(`select * from calorieLog where logged_at <= '${ params.end }' and logged_at >= '${ params.begin }'`)
 
+    if(!logs.rows.length) {
+        return res.status(404).json({ err: `No calorieLogs found in range ${ params.begin } to ${ params.end }` })
+    }
+
     res.status(200).json(logs.rows)
 })
 
@@ -167,7 +175,7 @@ router.get('/food/:foodName', async ({ db, params }, res) => {
     const logs = await db.query(`select * from calorielog where food ilike '%${ params.foodName.toLowerCase() }%' `)
 
     if(!logs.rows.length) {
-        return res.status(404).json({ err: `No Calorie Logs found for food ${ params.foodName }` })
+        return res.status(404).json({ err: `No calorieLogs found for food ${ params.foodName }` })
     }
 
     res.status(200).json(logs.rows)
@@ -177,7 +185,19 @@ router.get('/food/:foodName', async ({ db, params }, res) => {
 // @desc    Get all calorieLogs that fall in the given calorie range
 // @access  Public
 router.get('/calorierange/:begin/:end', async ({ db, params }, res) => {
+    if(isNaN(params.begin)) {
+        return res.status(400).json({ err: `${ params.begin } is not a valid number` })
+    }
+
+    if(isNaN(params.end)) {
+        return res.status(400).json({ err: `${ params.end } is not a valid number` })
+    }
+
     const logs = await db.query(`select * from calorieLog where calories <= ${ params.end } and calories >= ${ params.begin }`)
+
+    if(!logs.rows.length) {
+        return res.status(400).json({ err: `No calorieLogs found for range ${ params.begin } to ${ params.end }` })
+    }
 
     res.status(200).json(logs.rows)
 })

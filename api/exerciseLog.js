@@ -53,7 +53,7 @@ router.get('/user/:userId', async ({ db, params }, res) => {
 
     const logs = await db.query(`select * from exerciseLog where userid = '${ params.userId }' `)
     if(!logs.rows.length) {
-        return res.status(404).json({ err: `No exerciseLog found for userId ${ params.userId }` })
+        return res.status(404).json({ err: `No exerciseLogs found for userId ${ params.userId }` })
     }
 
     return res.status(200).json(logs.rows)
@@ -65,7 +65,7 @@ router.get('/user/:userId', async ({ db, params }, res) => {
 router.get('/log/:logId', async ({ db, params }, res) => {
     // if logId is not a valid uuid, throw an error
     if(!validUUID.test(params.logId)) {
-        return res.status(400).json({ err: `userId ${ params.logId } is not a valid UUID` })
+        return res.status(400).json({ err: `logId ${ params.logId } is not a valid UUID` })
     }
 
     const log = await db.query(`select * from exerciselog where logId = '${ params.logId }' `)
@@ -76,16 +76,16 @@ router.get('/log/:logId', async ({ db, params }, res) => {
     res.status(200).json(log.rows[0])
 })
 
-// @route   PUT /api/v1/exercise/update/:logId
+// @route   PUT /api/v1/exercise/log/:logId
 // @desc    Update exercise log
 // @access  Public
-router.put('/update/:logId', async ({ db, body, params }, res) => {
+router.put('/log/:logId', async ({ db, body, params }, res) => {
     if(!validUUID.test(params.logId)) {
-        return res.status(400).json({ err: `userId ${ params.logId } is not a valid UUID` })
+        return res.status(400).json({ err: `logId ${ params.logId } is not a valid UUID` })
     }
 
     if(!body.calories_burnt && !body.activity) {
-        return res.status(500).json({ err: `need to pass in at least calories_burnt or activity` })
+        return res.status(400).json({ err: `need to pass in at least calories_burnt or activity` })
     }
 
     // update the log
@@ -134,7 +134,7 @@ router.delete('/log/:logId', async ({ db, params }, res) => {
         return res.status(404).json({ err: `No calorieLogs found for id ${ params.logId }` })
     }
 
-    res.status(200).json(deletedLog.rows)
+    res.status(200).json(deletedLog.rows[0])
 })
 
 // @route   GET /api/v1/exercise/daterange/:begin/:end
@@ -161,7 +161,7 @@ router.get('/activity/:activityName', async ({ db, params }, res) => {
     const logs = await db.query(`select * from exerciselog where activity ilike '%${ params.activityName.toLowerCase() }%' `)
 
     if(!logs.rows.length) {
-        return res.status(404).json({ err: `No exercise Logs found for activity ${ params.activityName }` })
+        return res.status(404).json({ err: `No exerciseLogs found for activity ${ params.activityName }` })
     }
 
     res.status(200).json(logs.rows)
@@ -171,7 +171,19 @@ router.get('/activity/:activityName', async ({ db, params }, res) => {
 // @desc    Get all exerciseLogs that fall in the given calorie range
 // @access  Public
 router.get('/calorierange/:begin/:end', async ({ db, params }, res) => {
+    if(isNaN(params.begin)) {
+        return res.status(400).json({ err: `${ params.begin } is not a valid number` })
+    }
+
+    if(isNaN(params.end)) {
+        return res.status(400).json({ err: `${ params.end } is not a valid number` })
+    }
+
     const logs = await db.query(`select * from exerciseLog where calories_burnt <= ${ params.end } and calories_burnt >= ${ params.begin }`)
+
+    if(!logs.rows.length) {
+        return res.status(400).json({ err: `No exerciseLogs found for range ${ params.begin } to ${ params.end }` })
+    }
 
     res.status(200).json(logs.rows)
 })
