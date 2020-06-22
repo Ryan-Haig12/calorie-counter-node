@@ -18,11 +18,21 @@ const newUserData = {
     password2: 'newPassword'
 }
 let userId = ''
+let userClient // soon to be axios client
 
 describe('GET /api/v1/users/id/:userId', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        userClient = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error when an invalid UUID is passed in', async () => {
         try {
-            await axios.get(URL + '/id/123456')
+            await userClient.get('/id/123456')
         } catch(err) {
             expect(err.response.data.err).toBe('userId 123456 is not a valid UUID')
         }
@@ -30,7 +40,7 @@ describe('GET /api/v1/users/id/:userId', () => {
 
     test('should return an error when user not found', async () => {
         try {
-            const res = await axios.get(URL + '/id/8caa7f56-6f57-42f2-9bb5-266d1e35bc34')
+            const res = await userClient.get('/id/8caa7f56-6f57-42f2-9bb5-266d1e35bc34')
             expect(res.data.err).toBe('User 8caa7f56-6f57-42f2-9bb5-266d1e35bc34 not found')
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
@@ -39,7 +49,7 @@ describe('GET /api/v1/users/id/:userId', () => {
 
     test('should return the correct user', async () => {
         try {
-            const res = await axios.get(URL + '/id/8caa7f56-6f57-42f2-9bb5-266d1e35bc34')
+            const res = await userClient.get('/id/8caa7f56-6f57-42f2-9bb5-266d1e35bc34')
             expect(res.data.err).toBe('User 8caa7f56-6f57-42f2-9bb5-266d1e35bc34 not found')
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
@@ -51,7 +61,7 @@ describe('GET /api/v1/users/username/:username', () => {
     test('should return an error when username is not found', async () => {
         expect(1).toBe(1)
         try {
-            const res = await axios.get(URL + '/username/yeet')
+            const res = await userClient.get('/username/yeet')
             expect(res.data.err).toBe('User yeet not found')
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
@@ -61,7 +71,7 @@ describe('GET /api/v1/users/username/:username', () => {
     test('should return correct user', async () => {
         expect(1).toBe(1)
         try {
-            const res = await axios.get(URL + '/username/HaigRyan')
+            const res = await userClient.get('/username/HaigRyan')
 
             const { id, username, password, email, created_on, authtoken } = res.data
             expect(validUUID.test(id)).toBe(true)
@@ -80,7 +90,7 @@ describe('GET /api/v1/users/username/:username', () => {
 describe('GET /api/v1/users/allData/:userId', () => {
     test('should return an error when user is not found', async () => {
         try {
-            await axios.get(URL + '/allData/84612c93-20b2-41d9-a8da-b96728710ccc')
+            await userClient.get('/allData/84612c93-20b2-41d9-a8da-b96728710ccc')
         } catch(err) {
             expect(err.response.data.err).toBe('User 84612c93-20b2-41d9-a8da-b96728710ccc not found')
         }
@@ -88,7 +98,7 @@ describe('GET /api/v1/users/allData/:userId', () => {
 
     test('should return correct user with calorie and exercise log data', async () => {
         try {
-            const res = await axios.get(URL + '/allData/84612c93-20b2-41d9-a8da-b96728710aad')
+            const res = await userClient.get('/allData/84612c93-20b2-41d9-a8da-b96728710aad')
 
             const { user, calories, exercise } = res.data
 
@@ -123,7 +133,7 @@ describe('GET /api/v1/users/allData/:userId', () => {
 describe('POST /api/v1/users/create', () => {
     test('should return error if no data is passed in', async () => {
         try {
-            await axios.post(URL + '/create')
+            await userClient.post('/create')
         } catch(err) {
             const { errors } = err.response.data
             expect(errors[0].msg).toBe('Username is Required')
@@ -135,7 +145,7 @@ describe('POST /api/v1/users/create', () => {
 
     test('should return an error if the password is too short or too long', async () => {
         try {
-            await axios.post(URL + '/create', { ...userData, password: 'gb12', password2: 'gb12' })
+            await userClient.post('/create', { ...userData, password: 'gb12', password2: 'gb12' })
         } catch(err) {
             const { errors } = err.response.data
             expect(errors[0].msg).toBe('Password is Required (Min 6, max 40 Characters)')
@@ -144,7 +154,7 @@ describe('POST /api/v1/users/create', () => {
 
         try {
             const pass = 'letsGoNuggets15letsGoNuggets15letsGoNuggets15'
-            await axios.post(URL + '/create', { ...userData, password: pass, password2: pass })
+            await userClient.post('/create', { ...userData, password: pass, password2: pass })
         } catch(err) {
             const { errors } = err.response.data
             expect(errors[0].msg).toBe('Password is Required (Min 6, max 40 Characters)')
@@ -154,7 +164,7 @@ describe('POST /api/v1/users/create', () => {
 
     test('should return an error if email is already in the db', async () => {
         try {
-            await axios.post(URL + '/create', { ...userData, email: 'haigryan@gmail.com' })
+            await userClient.post('/create', { ...userData, email: 'haigryan@gmail.com' })
         } catch(err) {
             expect(err.response.data.err).toBe('Email haigryan@gmail.com already in use')
         }
@@ -162,7 +172,7 @@ describe('POST /api/v1/users/create', () => {
 
     test('should return an error if username is already in the db', async () => {
         try {
-            await axios.post(URL + '/create', { ...userData, username: 'HaigRyan' })
+            await userClient.post('/create', { ...userData, username: 'HaigRyan' })
         } catch(err) {
             expect(err.response.data.err).toBe('Username HaigRyan already in use')
         }
@@ -170,7 +180,7 @@ describe('POST /api/v1/users/create', () => {
 
     test('should return an error if passwords do not match', async () => {
         try {
-            await axios.post(URL + '/create', { ...userData, password2: 'notTheSamePassword' })
+            await userClient.post('/create', { ...userData, password2: 'notTheSamePassword' })
         } catch(err) {
             expect(err.response.data.err).toBe('passwords must match')
         }
@@ -178,7 +188,7 @@ describe('POST /api/v1/users/create', () => {
 
     test('should create a new user', async () => {
         try {
-            const res = await axios.post(URL + '/create', userData)
+            const res = await userClient.post('/create', userData)
 
             const { id, username, email, password, createdOn, authtoken } = res.data.newUser
             expect(validUUID.test(id)).toBe(true)
@@ -201,7 +211,7 @@ describe('POST /api/v1/users/create', () => {
 describe('PUT /api/v1/users/update/:userId', () => {
     test('should return an error if the userID is not a valid uuid', async () => {
         try {
-            await axios.put(URL + '/update/84612c93-20b2', userData)
+            await userClient.put('/update/84612c93-20b2', userData)
         } catch(err) {
             expect(err.response.data.err).toBe('userId 84612c93-20b2 is not a valid UUID')
         }
@@ -209,7 +219,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should return an error if new data is not passed in', async () => {
         try {
-            await axios.put(URL + '/update/84612c93-20b2-41d9-a8da-b96728710aad', {})
+            await userClient.put('/update/84612c93-20b2-41d9-a8da-b96728710aad', {})
         } catch(err) {
             expect(err.response.data.err).toBe('Need to pass in at least one email, password, or username')
         }
@@ -217,7 +227,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should return an error if the userId is not found', async () => {
         try {
-            await axios.put(URL + '/update/84612c93-20b2-41d9-a8da-b96728710ccc', userData)
+            await userClient.put('/update/84612c93-20b2-41d9-a8da-b96728710ccc', userData)
         } catch(err) {
             expect(err.response.data.err).toBe('User 84612c93-20b2-41d9-a8da-b96728710ccc not found')   
         }
@@ -225,7 +235,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should return an error if the new email is already in use', async () => {
         try {
-            await axios.put(URL + `/update/${ userId }`, { email: 'haigryan@gmail.com' })
+            await userClient.put(`/update/${ userId }`, { email: 'haigryan@gmail.com' })
         } catch(err) {
             expect(err.response.data.err).toBe('Email haigryan@gmail.com already in use')
         }
@@ -233,7 +243,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should return an error if the new username is already in use', async () => {
         try {
-            await axios.put(URL + `/update/${ userId }`, { username: 'HaigRyan' })
+            await userClient.put(`/update/${ userId }`, { username: 'HaigRyan' })
         } catch(err) {
             expect(err.response.data.err).toBe('Username HaigRyan already in use')
         }
@@ -241,7 +251,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should return an error if password is passed in and password2 is not', async () => {
         try {
-            await axios.put(URL + `/update/${ userId }`, { password: newUserData.password })
+            await userClient.put(`/update/${ userId }`, { password: newUserData.password })
         } catch(err) {
             expect(err.response.data.err).toBe('Need to pass in password2 as well')
         }
@@ -249,7 +259,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should return an error if password and password2 do not match', async () => {
         try {
-            await axios.put(URL + `/update/${ userId }`, { password: newUserData.password, password2: 'goNuggets15' })
+            await userClient.put(`/update/${ userId }`, { password: newUserData.password, password2: 'goNuggets15' })
         } catch(err) {
             expect(err.response.data.err).toBe('Passwords need to match')
         }
@@ -257,7 +267,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should update the user if only a username, password, or email is passed in', async () => {
         try {
-            const res = await axios.put(URL + `/update/${ userId }`, { password: 'newPassword', password2: 'newPassword' })
+            const res = await userClient.put(`/update/${ userId }`, { password: 'newPassword', password2: 'newPassword' })
             
             const { id, username, email, createdOn, authtoken, password } = res.data
             expect(id).toBe(userId)
@@ -273,7 +283,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 
     test('should update the user if all new data is passed in', async () => {
         try {
-            const res = await axios.put(URL + `/update/${ userId }`, newUserData)
+            const res = await userClient.put(`/update/${ userId }`, newUserData)
 
             const { id, username, email, createdOn, authtoken, password } = res.data
 
@@ -300,7 +310,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
         try {
             const res = await axios.post(AUTH_URL, { password: newUserData.password, email: newUserData.email })
             
-            const { id, username, email, created_on, authtoken } = res.data
+            const { id, username, email, created_on, authtoken } = res.data.user
             
             expect(id).toBe(userId)
             expect(username).toBe(newUserData.username)
@@ -316,7 +326,7 @@ describe('PUT /api/v1/users/update/:userId', () => {
 describe('DELETE /api/v1/users/delete/:userId', () => {
     test('should return an error if the userID is not a valid uuid', async () => {
         try {
-            await axios.delete(URL + '/delete/12345')
+            await userClient.delete(URL + '/delete/12345')
         } catch(err) {
             expect(err.response.data.err).toBe('userId 12345 is not a valid UUID')
         }
@@ -324,7 +334,7 @@ describe('DELETE /api/v1/users/delete/:userId', () => {
 
     test('should return an error if the user is not found', async () => {
         try {
-            await axios.delete(URL + '/delete/e49ad339-244b-4264-8759-492736e71914')
+            await userClient.delete('/delete/e49ad339-244b-4264-8759-492736e71914')
         } catch(err) {
             expect(err.response.data.err).toBe('User e49ad339-244b-4264-8759-492736e71914 not found')
         }
@@ -332,7 +342,7 @@ describe('DELETE /api/v1/users/delete/:userId', () => {
 
     test('should delete a user', async () => {
         try {
-            const res = await axios.delete(URL + `/delete/${ userId }`)
+            const res = await userClient.delete(`/delete/${ userId }`)
 
             const { id, username, email, createdOn, authtoken } = res.data
             expect(id).toBe(userId)

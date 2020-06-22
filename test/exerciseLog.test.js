@@ -3,6 +3,8 @@ const axios = require('axios')
 const { validUUID } = require('../util/regex')
 
 const URL = 'http://localhost:4000/api/v1/exercise'
+const AUTH_URL = 'http://localhost:4000/api/v1/auth'
+let client    // soon to be axios client
 
 const logData = {
     userId: '84612c93-20b2-41d9-a8da-b96728710aad',
@@ -17,9 +19,18 @@ const newLogData = {
 let newLogId = ''
 
 describe('POST /api/v1/exercise/createLog', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error when no data is passed in', async () => {
         try {
-            await axios.post(URL + '/createLog', {})
+            await client.post(URL + '/createLog', {})
         } catch(err) {
             const { errors } = err.response.data
             expect(errors[0].msg).toBe('userId is required')
@@ -30,7 +41,7 @@ describe('POST /api/v1/exercise/createLog', () => {
 
     test('should return an error when userId is not a valid UUID', async () => {
         try {
-            await axios.post(URL + '/createLog', { ...logData, userId: '12345-67-890' })
+            await client.post(URL + '/createLog', { ...logData, userId: '12345-67-890' })
         } catch(err) {
             expect(err.response.data.err).toBe('userId 12345-67-890 is not a valid UUID')
         }
@@ -38,7 +49,7 @@ describe('POST /api/v1/exercise/createLog', () => {
 
     test('should return an error when the userId is not found', async () => {
         try {
-            await axios.post(URL + '/createLog', { ...logData, userId: '84612c93-20b2-41d9-a8da-b96728710ccc' })
+            await client.post(URL + '/createLog', { ...logData, userId: '84612c93-20b2-41d9-a8da-b96728710ccc' })
         } catch(err) {
             expect(err.response.data.err).toBe('User 84612c93-20b2-41d9-a8da-b96728710ccc not found')
         }
@@ -46,7 +57,7 @@ describe('POST /api/v1/exercise/createLog', () => {
 
     test('should create a log for the given userId', async () => {
         try {
-            const res = await axios.post(URL + '/createLog', logData)
+            const res = await client.post(URL + '/createLog', logData)
 
             const { logid, userid, activity, caloriesBurnt } = res.data
             newLogId = logid
@@ -61,9 +72,18 @@ describe('POST /api/v1/exercise/createLog', () => {
 })
 
 describe('GET /api/v1/exercise/user/:userId', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error when userId is not a valid UUID', async () => {
         try {
-            await axios.get(URL + `/user/12345-67-890`)
+            await client.get(`/user/12345-67-890`)
         } catch(err) {
             expect(err.response.data.err).toBe('userId 12345-67-890 is not a valid UUID')
         }
@@ -71,7 +91,7 @@ describe('GET /api/v1/exercise/user/:userId', () => {
 
     test('should return an error when no logs are found', async () => {
         try {
-            await axios.get(URL + `/user/84612c93-20b2-41d9-a8da-b96728710ccc`)
+            await client.get(`/user/84612c93-20b2-41d9-a8da-b96728710ccc`)
         } catch(err) {
             expect(err.response.data.err).toBe('No exerciseLogs found for userId 84612c93-20b2-41d9-a8da-b96728710ccc')
         }
@@ -79,7 +99,7 @@ describe('GET /api/v1/exercise/user/:userId', () => {
 
     test('should return all logs for a valid userId', async () => {
         try {
-            const res = await axios.get(URL + `/user/${ logData.userId }`)
+            const res = await client.get(`/user/${ logData.userId }`)
             
             const { logid, userid, activity, calories_burnt } = res.data[0]
             expect(res.data.length).toBeGreaterThan(0)
@@ -94,9 +114,18 @@ describe('GET /api/v1/exercise/user/:userId', () => {
 })
 
 describe('GET /api/v1/exercise/log/:logId', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error when logId is not a valid UUID', async () => {
         try {
-            await axios.get(URL + `/log/12345-67-890`)
+            await client.get(`/log/12345-67-890`)
         } catch(err) {
             expect(err.response.data.err).toBe('logId 12345-67-890 is not a valid UUID')
         }
@@ -104,7 +133,7 @@ describe('GET /api/v1/exercise/log/:logId', () => {
 
     test('should return an error when no log is found', async () => {
         try {
-            await axios.get(URL + `/log/5e3acff9-c224-4daa-88cd-e631859ae362`)
+            await client.get(`/log/5e3acff9-c224-4daa-88cd-e631859ae362`)
         } catch(err) {
             expect(err.response.data.err).toBe('No exerciseLog found for logId 5e3acff9-c224-4daa-88cd-e631859ae362')
         }
@@ -112,7 +141,7 @@ describe('GET /api/v1/exercise/log/:logId', () => {
 
     test('should return a single log', async () => {
         try {
-            const res = await axios.get(URL + `/log/${ newLogId }`)
+            const res = await client.get(`/log/${ newLogId }`)
 
             const { logid, userid, activity, calories_burnt } = res.data
             expect(validUUID.test(logid)).toBe(true)
@@ -126,9 +155,18 @@ describe('GET /api/v1/exercise/log/:logId', () => {
 })
 
 describe('PUT /api/v1/exercise/log/:logId', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error when no new data is passed in', async () => {
         try {
-            await axios.put(URL + `/log/5e3acff9-c224-4daa-88cd-e631859ae363`, {})
+            await client.put(`/log/5e3acff9-c224-4daa-88cd-e631859ae363`, {})
         } catch(err) {
             expect(err.response.data.err).toBe('need to pass in at least calories_burnt or activity')
         }
@@ -136,7 +174,7 @@ describe('PUT /api/v1/exercise/log/:logId', () => {
 
     test('should return an error when logId is not a valid UUID', async () => {
         try {
-            await axios.put(URL + `/log/12345-67-890`, {})
+            await client.put(`/log/12345-67-890`, {})
         } catch(err) {
             expect(err.response.data.err).toBe('logId 12345-67-890 is not a valid UUID')
         }
@@ -144,7 +182,7 @@ describe('PUT /api/v1/exercise/log/:logId', () => {
 
     test('should update a log if only 1 item is changed', async () => {
         try {
-            const res = await axios.put(URL + `/log/${ newLogId }`, { calories_burnt: 200 })
+            const res = await client.put(`/log/${ newLogId }`, { calories_burnt: 200 })
 
             const { logid, userid, activity, caloriesBurnt } = res.data
             expect(validUUID.test(logid)).toBe(true)
@@ -158,7 +196,7 @@ describe('PUT /api/v1/exercise/log/:logId', () => {
 
     test('should update a log if all items are changed', async () => {
         try {
-            const res = await axios.put(URL + `/log/${ newLogId }`, newLogData)
+            const res = await client.put(`/log/${ newLogId }`, newLogData)
 
             const { logid, userid, activity, caloriesBurnt } = res.data
             expect(validUUID.test(logid)).toBe(true)
@@ -172,9 +210,18 @@ describe('PUT /api/v1/exercise/log/:logId', () => {
 })
 
 describe('DELETE /api/v1/exercise/log/:logId', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error when logId is not a valid UUID', async () => {
         try {
-            await axios.get(URL + `/log/12345-67-890`)
+            await client.get(`/log/12345-67-890`)
         } catch(err) {
             expect(err.response.data.err).toBe('logId 12345-67-890 is not a valid UUID')
         }
@@ -182,7 +229,7 @@ describe('DELETE /api/v1/exercise/log/:logId', () => {
 
     test('should return an error if no log is found', async () => {
         try {
-            await axios.get(URL + `/log/5e3acff9-c224-4daa-88cd-e631859cc363`)
+            await client.get(`/log/5e3acff9-c224-4daa-88cd-e631859cc363`)
         } catch(err) {
             expect(err.response.data.err).toBe('No exerciseLog found for logId 5e3acff9-c224-4daa-88cd-e631859cc363')
         }
@@ -190,7 +237,7 @@ describe('DELETE /api/v1/exercise/log/:logId', () => {
 
     test('should delete a log', async () => {
         try {
-            const res = await axios.delete(URL + `/log/${ newLogId }`)
+            const res = await client.delete(`/log/${ newLogId }`)
 
             const { logid, userid, activity, caloriesBurnt } = res.data
             expect(validUUID.test(logid)).toBe(true)
@@ -204,9 +251,18 @@ describe('DELETE /api/v1/exercise/log/:logId', () => {
 })
 
 describe('GET /api/v1/exercise/daterange/:begin/:end', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return an error id :begin is not a valid date', async () => {
         try {
-            await axios.get(URL + '/daterange/20-01-01/2021-01-01')
+            await client.get('/daterange/20-01-01/2021-01-01')
         } catch(err) {
             expect(err.response.data.err).toBe('20-01-01 is not a valid date')
         }
@@ -214,7 +270,7 @@ describe('GET /api/v1/exercise/daterange/:begin/:end', () => {
 
     test('should return an error id :end is not a valid date', async () => {
         try {
-            await axios.get(URL + '/daterange/2010-01-01/22-01-01')
+            await client.get('/daterange/2010-01-01/22-01-01')
         } catch(err) {
             expect(err.response.data.err).toBe('22-01-01 is not a valid date')
         }
@@ -222,7 +278,7 @@ describe('GET /api/v1/exercise/daterange/:begin/:end', () => {
 
     test('should return error if no logs are found', async () => {
         try {
-            await axios.get(URL + '/daterange/1980-01-01/1990-01-01')
+            await client.get('/daterange/1980-01-01/1990-01-01')
         } catch(err) {
             expect(err.response.data.err).toBe('No calorieLogs found in range 1980-01-01 to 1990-01-01')
         }
@@ -230,7 +286,7 @@ describe('GET /api/v1/exercise/daterange/:begin/:end', () => {
 
     test('should return logs within a valid daterange', async () => {
         try {
-            const res = await axios.get(URL + '/daterange/2020-01-01/2030-01-01')
+            const res = await client.get('/daterange/2020-01-01/2030-01-01')
             expect(res.data.length).toBeGreaterThan(0)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
@@ -239,9 +295,18 @@ describe('GET /api/v1/exercise/daterange/:begin/:end', () => {
 })
 
 describe('GET /api/v1/exercise/activity/:activityName', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should return error if no similar activity is found', async () => {
         try {
-            await axios.get(URL + '/activity/qqqqq')
+            await client.get('/activity/qqqqq')
         } catch(err) {
             expect(err.response.data.err).toBe('No exerciseLogs found for activity qqqqq')
         }
@@ -249,7 +314,7 @@ describe('GET /api/v1/exercise/activity/:activityName', () => {
 
     test('should return "Walking and Ring Fit" when searching for "Walking"', async () => {
         try {
-            const res = await axios.get(URL + '/activity/Walking')
+            const res = await client.get('/activity/Walking')
             const walkRingFit = res.data.find(log => log.activity === 'Walking and Ring Fit')
             
             expect(validUUID.test(walkRingFit.logid)).toBe(true)
@@ -261,15 +326,24 @@ describe('GET /api/v1/exercise/activity/:activityName', () => {
 })
 
 describe('GET /api/v1/calories/calorierange/:begin/:end', () => {
+    beforeAll(async () => {
+        const loginData = await axios.post(AUTH_URL, { password: 'password', email: 'haigryan@gmail.com' })
+
+        client = axios.create({
+            baseURL: URL,
+            headers: {'Authorization': 'Bearer ' + loginData.data.jwt}
+        })
+    })
+
     test('should throw an error if begin or end is not a number', async () => {
         try {
-            await axios.get(URL + '/calorierange/yeet/200')
+            await client.get('/calorierange/yeet/200')
         } catch(err) {
             expect(err.response.data.err).toBe('yeet is not a valid number')
         }
 
         try {
-            await axios.get(URL + '/calorierange/200/jokic')
+            await client.get('/calorierange/200/jokic')
         } catch(err) {
             expect(err.response.data.err).toBe('jokic is not a valid number')
         }
@@ -277,7 +351,7 @@ describe('GET /api/v1/calories/calorierange/:begin/:end', () => {
 
     test('should return error if no logs are found', async () => {
         try {
-            await axios.get(URL + '/calorierange/49999/50000')
+            await client.get('/calorierange/49999/50000')
         } catch(err) {
             expect(err.response.data.err).toBe('No exerciseLogs found for range 49999 to 50000')
         }
@@ -285,7 +359,7 @@ describe('GET /api/v1/calories/calorierange/:begin/:end', () => {
 
     test('should return logs within a valid calorieRange', async () => {
         try {
-            const res = await axios.get(URL + '/calorierange/50/5000')
+            const res = await client.get('/calorierange/50/5000')
 
             expect(res.data.length).toBeGreaterThan(1)
         } catch(err) {
