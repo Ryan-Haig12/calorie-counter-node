@@ -2,6 +2,7 @@ const router = require('express').Router()
 const { check, validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')
 
+const auth = require('../util/auth')
 const { validUUID } = require('../util/regex')
 
 // @route   GET /api/v1/users/id/:userId
@@ -116,13 +117,13 @@ router.post('/create', [
 
 // @route   PUT /api/v1/users/update/:userId
 // @desc    Update a user
-// @access  Public
+// @access  Private
 router.put('/update/:userId', [
     check('email', 'Email is not valid').isEmail().optional(),
     check('username', 'Username is not valid').optional(),
     check('password', 'Password is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }).optional(),
     check('password2', 'Password2 is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }).optional()
-], async (req, res) => {
+], auth, async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array() })
@@ -190,8 +191,8 @@ router.put('/update/:userId', [
 
 // @route   DELETE /api/v1/users/delete/:userId
 // @desc    Update a user
-// @access  Public
-router.delete('/delete/:userId', async ({ db, params }, res) => {
+// @access  Private
+router.delete('/delete/:userId', auth, async ({ db, params }, res) => {
     // if userId is not a valid uuid, throw an error
     if(!validUUID.test(params.userId)) {
         return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })

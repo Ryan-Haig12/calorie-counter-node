@@ -3,6 +3,8 @@ const { check, validationResult } = require('express-validator')
 const bcrypt = require('bcrypt')
 const { validEmail } = require('../util/regex')
 
+const { generateToken } = require('../util/jwt')
+
 // @route   POST /api/v1/auth
 // @desc    Login route
 // @access  Public
@@ -39,7 +41,9 @@ router.post('/', [
 
         if(data.rows.length) data.rows[0].password = undefined
 
-        res.status(200).json(data.rows[0])
+        const newJWT = generateToken({ user: data.rows[0] })
+
+        res.status(200).json({ user: data.rows[0], jwt: newJWT })
     } catch(err) {
         console.log(err)
     }

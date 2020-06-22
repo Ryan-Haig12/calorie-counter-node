@@ -2,14 +2,16 @@ const router = require('express').Router()
 const { check, validationResult } = require('express-validator')
 const { validUUID, validDate } = require('../util/regex')
 
+const auth = require('../util/auth')
+
 // @route   POST /api/v1/calories/createLog
 // @desc    Create a new Calorie Log
-// @access  Public
+// @access  Private
 router.post('/createLog', [
     check('userId', 'userId is required').exists(),
     check('food', 'food is required').exists(),
     check('calories', 'calories is required').exists(),
-], async (req, res) => {
+], auth, async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array() })
@@ -78,11 +80,11 @@ router.get('/log/:logId', async ({ db, params }, res) => {
 
 // @route   PUT /api/v1/calories/log/:logId
 // @desc    Update calorie log
-// @access  Public
+// @access  Private
 router.put('/log/:logId', [
     check('food', 'food is required').optional(),
     check('calories', 'calories is required').optional(),
-], async (req, res) => {
+], auth, async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array() })
@@ -124,8 +126,8 @@ router.put('/log/:logId', [
 
 // @route   DELETE /api/v1/calories/log/:logId
 // @desc    Delete a calorie log by logId
-// @access  Public
-router.delete('/log/:logId', async ({ db, params }, res) => {
+// @access  Private
+router.delete('/log/:logId', auth, async ({ db, params }, res) => {
     if(!validUUID.test(params.logId)) {
         return res.status(400).json({ err: `userId ${ params.logId } is not a valid UUID` })
     }
