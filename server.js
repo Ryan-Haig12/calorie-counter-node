@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+const cors = require('cors')
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -22,11 +23,12 @@ const app = express()
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(morgan('dev'))
+app.use(cors())
 
 // run prior to every request
 app.use(async (req, res, next) => {
     req.db = db
-    await next()
+    next()
 })
 app.use(require('./util/querySanitizer'))
 
