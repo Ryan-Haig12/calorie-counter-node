@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 
 const auth = require('../util/auth')
 const { validUUID } = require('../util/regex')
+const { generateToken } = require('../util/jwt')
 
 // @route   GET /api/v1/users/id/:userId
 // @desc    Get user from db by userId
@@ -112,7 +113,9 @@ router.post('/create', [
         `
     )
 
-    res.status(200).json({ newUser: newUser.rows[0] })
+    const newJWT = generateToken({ user: newUser.rows[0] })
+
+    res.status(200).json({ newUser: newUser.rows[0], jwt: newJWT })
 })
 
 // @route   PUT /api/v1/users/update/:userId

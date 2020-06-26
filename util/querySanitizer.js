@@ -32,8 +32,7 @@ const querySanitizer = async (req, res, next) => {
     if(flag) {
         await next()
     } else {
-        res.status = 400
-        res.json(error)
+        res.status(400).json(error)
     }
 }
 
