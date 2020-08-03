@@ -9,7 +9,8 @@ let client    // soon to be axios client
 const logData = {
     userId: '84612c93-20b2-41d9-a8da-b96728710aad',
     food: 'Chicken and Rice',
-    calories: 600
+    calories: 600,
+    timeOfDay: 'Dinner'
 }
 const newLogData = {
     userId: '84612c93-20b2-41d9-a8da-b96728710aad',
@@ -59,12 +60,13 @@ describe('POST /api/v1/calories/createLog', () => {
         try {
             const res = await client.post('/createLog', logData)
 
-            const { logid, userid, food, calories } = res.data
+            const { logid, userid, food, calories, timeOfDay } = res.data
             newLogId = logid
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(logData.userId)
             expect(food).toBe(logData.food)
             expect(calories).toBe(logData.calories)
+            expect(timeOfDay).toBe(logData.timeOfDay)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
         }
@@ -106,6 +108,7 @@ describe('GET /api/v1/calories/user/:userId', () => {
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(logData.userId)
             expect(food).toBeTruthy()
+            expect(timeOfDay).toBe(logData.timeOfDay)
             expect(typeof calories === 'number').toBe(true)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
@@ -148,6 +151,7 @@ describe('GET /api/v1/calories/log/:logId', () => {
             expect(userid).toBe(logData.userId)
             expect(food).toBe(logData.food)
             expect(calories).toBe(logData.calories)
+            expect(timeOfDay).toBe(logData.timeOfDay)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
         }
@@ -189,6 +193,7 @@ describe('PUT /api/v1/calories/log/:logId', () => {
             expect(userid).toBe(newLogData.userId)
             expect(food).toBe(logData.food)
             expect(calories).toBe(200)
+            expect(timeOfDay).toBe(logData.timeOfDay)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
         }
@@ -203,6 +208,7 @@ describe('PUT /api/v1/calories/log/:logId', () => {
             expect(userid).toBe(newLogData.userId)
             expect(food).toBe(newLogData.food)
             expect(calories).toBe(newLogData.calories)
+            expect(timeOfDay).toBe(logData.timeOfDay)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
         }
@@ -244,6 +250,7 @@ describe('DELETE /api/v1/calories/log/:logId', () => {
             expect(userid).toBe(newLogData.userId)
             expect(food).toBe(newLogData.food)
             expect(calories).toBe(newLogData.calories)
+            expect(timeOfDay).toBe(logData.timeOfDay)
         } catch(err) {
             console.log('i hope you don\'t ever see this', err)
         }

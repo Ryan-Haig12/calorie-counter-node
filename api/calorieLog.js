@@ -11,6 +11,7 @@ router.post('/createLog', [
     check('userId', 'userId is required').exists(),
     check('food', 'food is required').exists(),
     check('calories', 'calories is required').exists(),
+    check('timeOfDay', 'time of day is required').exists(),
 ], auth, async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
@@ -32,12 +33,13 @@ router.post('/createLog', [
 
     user = user.rows[0]
     const newCalorieLog = await db.query(`
-        insert into calorieLog (userId, food, calories) values ('${ body.userId }', '${ body.food }', ${ body.calories })
+        insert into calorieLog (userId, food, calories, time_of_day) values ('${ body.userId }', '${ body.food }', ${ body.calories }, '${ body.timeOfDay }')
         returning
             logid,
             userid,
             food,
             calories,
+            time_of_day as "timeOfDay",
             logged_at as "loggedAt"
     `)
 
@@ -114,6 +116,7 @@ router.put('/log/:logId', [
             userid,
             food,
             calories,
+            time_of_day as "timeOfDay",
             logged_at as "loggedAt"
     `)
 
@@ -139,6 +142,7 @@ router.delete('/log/:logId', auth, async ({ db, params }, res) => {
             userid,
             food,
             calories,
+            time_of_day as "timeOfDay",
             logged_at as "loggedAt"
     `)
 

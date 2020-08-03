@@ -60,10 +60,21 @@ router.get('/allData/:userId', async ({ db, params }, res) => {
     const caloryData = await db.query(`select * from calorieLog where userid = '${ params.userId }' `)
     const exerciseData = await db.query(`select * from exerciseLog where userid = '${ params.userId }' `)
 
+    const totals = {
+        caloriesGained: 0,
+        caloriesBurnt: 0,
+        calorieLogs: caloryData.rows.length,
+        exerciseLogs: exerciseData.rows.length
+    }
+    caloryData.rows.map(data => totals.caloriesGained += data.calories)
+    exerciseData.rows.map(data => totals.caloriesBurnt += data.calories_burnt)
+    totals.netCalories = totals.caloriesGained - totals.caloriesBurnt
+
     res.status(200).json({
         user: userData.rows[0],
         calories: caloryData.rows,
         exercise: exerciseData.rows,
+        totals
     })
 })
 
