@@ -86,12 +86,18 @@ router.post('/create', [
     check('email', 'Email is Required').isEmail(),
     check('password', 'Password is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }),
     check('password2', 'Password2 is Required (Min 6, max 40 Characters)').isLength({ min: 6, max: 40 }),
+    check('currentWeight', 'currentWeight is Required').isNumeric(),
+    check('idealWeight', 'idealWeight is Required').isNumeric(),
+    check('dailyCalorieIntake', 'dailyCalorieIntake is Required').isNumeric(),
+    check('gender', 'gender is Required between 2 and 10 chars').isLength({ min: 2, max: 10 }),
+    check('birthday', 'birthday is Required').exists(),
 ], async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array() })
     }
     const { db, body } = req
+    const { username, email, currentWeight, idealWeight, age, gender, birthday, dailyCalorieIntake } = body
 
     // if email exists, return an error
     const emailExists = await db.query(`select * from users where email = '${ body.email }'`)
@@ -114,15 +120,21 @@ router.post('/create', [
     const salt = await bcrypt.genSalt(8)
     const hash = await bcrypt.hash(body.password, salt)
 
-    // create user and return new user info
-    const newUser = await db.query(
-        `
-        insert into users (username, password, email)
-            values ('${ body.username }', '${ hash }', '${ body.email }')
-        returning
-            id, username, email, created_on as "createdOn", authtoken
-        `
-    )
+    let newUser
+    console.log(username, email, currentWeight, idealWeight, age, gender, birthday)
+    try {
+        // create user and return new user info
+        newUser = await db.query(
+            `
+            insert into users (username, password, email, current_weight, ideal_weight, age, gender, birthday, daily_calorie_intake)
+                values ('${ username }', '${ hash }', '${ email }', '${ currentWeight }', '${ idealWeight }', '${ age }', '${ gender }', '${ birthday }', '${ dailyCalorieIntake }')
+            returning
+                id, username, email, created_on as "createdOn", authtoken, current_weight, ideal_weight, age, gender, birthday
+            `
+        )
+    } catch(err) {
+        console.log(err)
+    }
 
     const newJWT = generateToken({ user: newUser.rows[0] })
 
