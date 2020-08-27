@@ -22,7 +22,12 @@ router.post('/', [
     }
 
     try {
-        const data = await req.db.query(`select * from users where users.email = '${ req.body.email }'`)
+        const data = await req.db.query(`
+            select id, password, username, email, created_on as "createdOn", authtoken, current_weight as "currentWeight", ideal_weight as "idealWeight", daily_calorie_intake as "dailyCalorieIntake", age, gender, birthday
+                from users 
+                where 
+                users.email = '${ req.body.email }'
+        `)
 
         if(!data.rows[0]) {
             res.status = 404
@@ -31,6 +36,7 @@ router.post('/', [
         }
 
         // if passwords do not match, return an error
+        console.log(req.body.password, data.rows[0])
         const passMatch = await bcrypt.compare(req.body.password, data.rows[0].password)
         
         if(!passMatch) {

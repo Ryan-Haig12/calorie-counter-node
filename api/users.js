@@ -129,7 +129,7 @@ router.post('/create', [
             insert into users (username, password, email, current_weight, ideal_weight, age, gender, birthday, daily_calorie_intake)
                 values ('${ username }', '${ hash }', '${ email }', '${ currentWeight }', '${ idealWeight }', '${ age }', '${ gender }', '${ birthday }', '${ dailyCalorieIntake }')
             returning
-                id, username, email, created_on as "createdOn", authtoken, current_weight, ideal_weight, age, gender, birthday
+                id, username, email, created_on as "createdOn", authtoken, current_weight as "currentWeight", ideal_weight as "idealWeight", daily_calorie_intake as "dailyCalorieIntake", age, gender, birthday
             `
         )
     } catch(err) {
