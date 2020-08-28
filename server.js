@@ -35,6 +35,7 @@ app.use(require('./util/querySanitizer'))
 app.use('/api/v1/auth', require('./api/auth'))
 app.use('/api/v1/calories', require('./api/calorieLog'))
 app.use('/api/v1/exercise', require('./api/exerciseLog'))
+app.use('/api/v1/friends', require('./api/friends'))
 app.use('/api/v1/users', require('./api/users'))
 
 const PORT = process.env.PORT || 4000
