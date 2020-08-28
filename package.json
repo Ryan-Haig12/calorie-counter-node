@@ -22,7 +22,8 @@
   },
   "scripts": {
     "server": "nodemon server.js",
-    "test": "clear && jest --verbose --env=node ./test/*.test.js"
+    "test": "clear && jest --verbose --env=node ./test/*.test.js",
+    "singleTest": "jest --verbose --env=node ./test/friends.test.js"
   },
   "author": "",
   "license": "ISC"

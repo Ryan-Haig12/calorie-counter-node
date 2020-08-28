@@ -3,11 +3,11 @@ const { check, validationResult } = require('express-validator')
 
 const auth = require('../util/auth')
 
-// @route   POST /api/v1/addFriend
-// @desc    test route
-// @access  Public
-router.get('/addFriend', [
-    check('newFriendEmail', 'newFriendEmail is required').exists()
+// @route   POST /api/v1/friends/addFriend
+// @desc    Create a new friend log to simulate a friendship
+// @access  Private
+router.post('/addFriend', [
+    check('newFriendEmail', 'newFriendEmail is Required').exists().isEmail()
 ], auth, async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){
