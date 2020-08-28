@@ -85,13 +85,12 @@ describe('POST /api/v1/auth', () => {
         try {
             const res = await authClient.post('/', { password: 'password', email: 'haigryan@gmail.com' })
             
-            const { id, username, password, email, created_on, authtoken } = res.data.user
+            const { id, username, password, email, authtoken } = res.data.user
             expect(validUUID.test(id)).toBe(true)
             expect(username).toBe('HaigRyan')
             expect(email).toBe('haigryan@gmail.com')
             expect(password).toBe(undefined)
             expect(validEmail.test(email)).toBe(true)
-            expect(created_on > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
             expect(res.data.jwt).toBeTruthy()
         } catch(err) {

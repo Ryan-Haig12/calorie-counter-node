@@ -9,13 +9,25 @@ const userData = {
     username: 'Test User',
     email: 'test@test.com',
     password: 'password',
-    password2: 'password'
+    password2: 'password',
+    currentWeight: 180,
+    idealWeight: 150,
+    dailyCalorieIntake: 2250,
+    gender: "male",
+    birthday: "2000-01-01",
+    age: 20,
 }
 const newUserData = {
     username: 'A New User',
     email: 'testguy@test.com',
     password: 'newPassword',
-    password2: 'newPassword'
+    password2: 'newPassword',
+    currentWeight: 160,
+    idealWeight: 150,
+    dailyCalorieIntake: 1800,
+    gender: "female",
+    birthday: "2000-01-01",
+    age: 20,
 }
 let userId = ''
 let userClient // soon to be axios client
@@ -43,7 +55,8 @@ describe('GET /api/v1/users/id/:userId', () => {
             const res = await userClient.get('/id/8caa7f56-6f57-42f2-9bb5-266d1e35bc34')
             expect(res.data.err).toBe('User 8caa7f56-6f57-42f2-9bb5-266d1e35bc34 not found')
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 
@@ -52,7 +65,8 @@ describe('GET /api/v1/users/id/:userId', () => {
             const res = await userClient.get('/id/8caa7f56-6f57-42f2-9bb5-266d1e35bc34')
             expect(res.data.err).toBe('User 8caa7f56-6f57-42f2-9bb5-266d1e35bc34 not found')
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 })
@@ -64,7 +78,8 @@ describe('GET /api/v1/users/username/:username', () => {
             const res = await userClient.get('/username/yeet')
             expect(res.data.err).toBe('User yeet not found')
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 
@@ -82,7 +97,8 @@ describe('GET /api/v1/users/username/:username', () => {
             expect(created_on > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 })
@@ -125,7 +141,8 @@ describe('GET /api/v1/users/allData/:userId', () => {
             expect(calories_burnt).toBeGreaterThan(0)
             expect(exerciseLoggedAt).toBeTruthy()
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 })
@@ -172,7 +189,7 @@ describe('POST /api/v1/users/create', () => {
 
     test('should return an error if username is already in the db', async () => {
         try {
-            await userClient.post('/create', { ...userData, username: 'HaigRyan' })
+            await userClient.post('/create', { ...userData, email: "validEmail@test.com", username: 'HaigRyan' })
         } catch(err) {
             expect(err.response.data.err).toBe('Username HaigRyan already in use')
         }
@@ -190,7 +207,7 @@ describe('POST /api/v1/users/create', () => {
         try {
             const res = await userClient.post('/create', userData)
 
-            const { id, username, email, password, createdOn, authtoken } = res.data.newUser
+            const { id, username, email, password, createdOn, authtoken, currentWeight, idealWeight, dailyCalorieIntake, gender, age } = res.data.newUser
             expect(validUUID.test(id)).toBe(true)
             expect(username).toBe(userData.username)
             expect(email).toBe(userData.email)
@@ -199,11 +216,17 @@ describe('POST /api/v1/users/create', () => {
             expect(email).toBe(userData.email)
             expect(createdOn > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
+            expect(currentWeight).toBe(180)
+            expect(idealWeight).toBe(150)
+            expect(dailyCalorieIntake).toBe(2250)
+            expect(gender).toBe('male')
+            expect(age).toBe(20)
 
             // set the userId up so that this user can be deleted below
             userId = id
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 })
@@ -277,7 +300,8 @@ describe('PUT /api/v1/users/update/:userId', () => {
             expect(createdOn > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 
@@ -294,7 +318,8 @@ describe('PUT /api/v1/users/update/:userId', () => {
             expect(createdOn > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err.response.data)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 
@@ -302,7 +327,8 @@ describe('PUT /api/v1/users/update/:userId', () => {
         try {
             await axios.post(AUTH_URL, { password: userData.password, email: userData.email })
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 
@@ -315,10 +341,11 @@ describe('PUT /api/v1/users/update/:userId', () => {
             expect(id).toBe(userId)
             expect(username).toBe(newUserData.username)
             expect(email).toBe(newUserData.email)
-            expect(created_on > '2020-01-01').toBe(true)
+            //expect(created_on > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this') 
+            expect(0).toBe(1)
         }
     })
 })
@@ -351,7 +378,8 @@ describe('DELETE /api/v1/users/delete/:userId', () => {
             expect(createdOn > '2020-01-01').toBe(true)
             expect(validUUID.test(authtoken)).toBe(true)
         } catch(err) {
-            console.log('i hope you don\'t ever see this', err)
+            console.log('i hope you don\'t ever see this')
+            expect(0).toBe(1)
         }
     })
 })

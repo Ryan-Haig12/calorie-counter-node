@@ -15,7 +15,8 @@ const logData = {
 const newLogData = {
     userId: '84612c93-20b2-41d9-a8da-b96728710aad',
     food: 'Bagel with Peanut Butter',
-    calories: 800
+    calories: 800,
+    timeOfDay: 'Lunch'
 }
 let newLogId = ''
 
@@ -103,7 +104,7 @@ describe('GET /api/v1/calories/user/:userId', () => {
         try {
             const res = await client.get(`/user/${ logData.userId }`)
             
-            const { logid, userid, food, calories } = res.data[0]
+            const { logid, userid, food, calories, timeOfDay } = res.data[0]
             expect(res.data.length).toBeGreaterThan(0)
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(logData.userId)
@@ -146,7 +147,7 @@ describe('GET /api/v1/calories/log/:logId', () => {
         try {
             const res = await client.get(`/log/${ newLogId }`)
 
-            const { logid, userid, food, calories } = res.data
+            const { logid, userid, food, calories, timeOfDay } = res.data
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(logData.userId)
             expect(food).toBe(logData.food)
@@ -188,7 +189,7 @@ describe('PUT /api/v1/calories/log/:logId', () => {
         try {
             const res = await client.put(`/log/${ newLogId }`, { calories: 200 })
 
-            const { logid, userid, food, calories } = res.data
+            const { logid, userid, food, calories, timeOfDay } = res.data
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(newLogData.userId)
             expect(food).toBe(logData.food)
@@ -203,7 +204,7 @@ describe('PUT /api/v1/calories/log/:logId', () => {
         try {
             const res = await client.put(`/log/${ newLogId }`, newLogData)
 
-            const { logid, userid, food, calories } = res.data
+            const { logid, userid, food, calories, timeOfDay } = res.data
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(newLogData.userId)
             expect(food).toBe(newLogData.food)
@@ -245,7 +246,7 @@ describe('DELETE /api/v1/calories/log/:logId', () => {
         try {
             const res = await client.delete(`/log/${ newLogId }`)
 
-            const { logid, userid, food, calories } = res.data
+            const { logid, userid, food, calories, timeOfDay } = res.data
             expect(validUUID.test(logid)).toBe(true)
             expect(userid).toBe(newLogData.userId)
             expect(food).toBe(newLogData.food)

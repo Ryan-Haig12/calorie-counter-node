@@ -91,6 +91,7 @@ router.post('/create', [
     check('dailyCalorieIntake', 'dailyCalorieIntake is Required').isNumeric(),
     check('gender', 'gender is Required between 2 and 10 chars').isLength({ min: 2, max: 10 }),
     check('birthday', 'birthday is Required').exists(),
+    check('age', 'age is required').exists()
 ], async (req, res) => {
     const errors = validationResult(req)
     if(!errors.isEmpty()){

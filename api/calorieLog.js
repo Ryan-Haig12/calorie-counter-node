@@ -55,7 +55,15 @@ router.get('/user/:userId', async ({ db, params }, res) => {
         return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
     }
 
-    const logs = await db.query(`select * from calorielog where userid = '${ params.userId }' `)
+    const logs = await db.query(`
+        select 
+            logId,
+            userId,
+            food,
+            calories,
+            time_of_day as "timeOfDay"
+        from calorielog where userid = '${ params.userId }'
+    `)
     if(!logs.rows.length) {
         return res.status(404).json({ err: `No calorieLogs found for userId ${ params.userId }` })
     }
@@ -72,7 +80,13 @@ router.get('/log/:logId', async ({ db, params }, res) => {
         return res.status(400).json({ err: `logId ${ params.logId } is not a valid UUID` })
     }
 
-    const log = await db.query(`select * from calorielog where logId = '${ params.logId }' `)
+    const log = await db.query(`select 
+        logId,
+        userId,
+        food,
+        calories,
+        time_of_day as "timeOfDay" from calorielog where logId = '${ params.logId }'
+    `)
     if(!log.rows.length) {
         return res.status(404).json({ err: `No calorieLog found for logId ${ params.logId }` })
     }
