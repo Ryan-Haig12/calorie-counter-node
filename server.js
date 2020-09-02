@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -25,6 +26,9 @@ app.use(bodyParser.json())
 app.use(morgan('dev'))
 app.use(cors())
 
+// initialize swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('./swagger.json', { "showExplorer": true })))
+
 // run prior to every request
 app.use(async (req, res, next) => {
     req.db = db
@@ -41,4 +45,5 @@ app.use('/api/v1/users', require('./api/users'))
 const PORT = process.env.PORT || 4000
 app.listen(PORT, () => {
     console.log(`Node.js express server running on port ${ PORT }`)
+    console.log(`Swagger docs server running on port ${ PORT }/api-docs`)
 })

@@ -1,0 +1,80 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "Calorie Counter",
+      "description": "Calorie Counter Node/Express API",
+      "license": {
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+      }
+    },
+    "host": "localhost:4000",
+    "basePath": "/",
+    "tags": [{
+      "name": "Auth",
+      "description": "Authenticated Services"
+    }],
+    "schemes": [
+      "http"
+    ],
+    "consumes": [
+      "application/json"
+    ],
+    "produces": [
+      "application/json"
+    ],
+    "paths": {
+      "/api/v1/auth": {
+        "post": {
+          "tags": ["Auth"],
+          "summary": "Login to the API by receiving a valid JWT",
+          "requestBody": {
+            "required": true,
+            "description": "User to be logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/definitions/AuthPayload"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": { "$ref": "#/definitions/Authenticated" }
+            },
+            "400": {
+              "description": "Bad Request"
+            },
+            "404": {
+              "description": "Email not found"
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "Authenticated": {
+        "required": [
+          "user",
+          "jwt"
+        ],
+        "properties": {
+          "user": { "type": "object" },
+          "jwt": { "type": "string" }
+        }
+      },
+      "AuthPayload": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      }
+    }
+  }

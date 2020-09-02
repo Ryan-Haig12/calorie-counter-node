@@ -30,9 +30,7 @@ router.post('/', [
         `)
 
         if(!data.rows[0]) {
-            res.status = 404
-            res.json({ error: `Email not found` })
-            return
+            return res.status(404).json({ error: `Email not found` })
         }
 
         // if passwords do not match, return an error
