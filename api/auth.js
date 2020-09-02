@@ -36,7 +36,6 @@ router.post('/', [
         }
 
         // if passwords do not match, return an error
-        console.log(req.body.password, data.rows[0])
         const passMatch = await bcrypt.compare(req.body.password, data.rows[0].password)
         
         if(!passMatch) {
