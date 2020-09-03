@@ -37,9 +37,7 @@ router.post('/', [
         const passMatch = await bcrypt.compare(req.body.password, data.rows[0].password)
         
         if(!passMatch) {
-            res.status = 400
-            res.json({ error: `Email/password are not correct` })
-            return
+            return res.status(400).json({ error: `Email/password are not correct` })
         }
 
         if(data.rows.length) data.rows[0].password = undefined

@@ -1,80 +1,153 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "version": "1.0.0",
-      "title": "Calorie Counter",
-      "description": "Calorie Counter Node/Express API",
-      "license": {
-        "name": "MIT",
-        "url": "https://opensource.org/licenses/MIT"
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Calorie Counter",
+    "description": "Calorie Counter Node/Express API",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerJWT": {
+        "type": "http",
+        "description": "JWT to use protected routes. Can be acquired using the API. You only need to paste the JWT. There is no need to write \"Bearer\" inside of the input box.",
+        "scheme": "bearer",
+        "in": "header",
+        "name": "Authorization"
       }
-    },
-    "host": "localhost:4000",
-    "basePath": "/",
-    "tags": [{
-      "name": "Auth",
-      "description": "Authenticated Services"
-    }],
-    "schemes": [
-      "http"
-    ],
-    "consumes": [
-      "application/json"
-    ],
-    "produces": [
-      "application/json"
-    ],
-    "paths": {
-      "/api/v1/auth": {
-        "post": {
-          "tags": ["Auth"],
-          "summary": "Login to the API by receiving a valid JWT",
-          "requestBody": {
-            "required": true,
-            "description": "User to be logged in",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/definitions/AuthPayload"
-                }
+    }
+  },
+  "security": [{
+      "bearerJWT": []
+  }],
+  "host": "localhost:4000",
+  "basePath": "/",
+  "tags": [{
+    "name": "Auth",
+    "description": "Authenticated Services"
+  }, {
+    "name": "Calorie Logs",
+    "description": "Logs for users to record their food intake"
+  }, {
+    "name": "Exercise Logs",
+    "description": "Logs for users to record their exercise behavior"
+  }, {
+    "name": "Friends",
+    "description": "Social media friend requests/logs"
+  }, {
+    "name": "Users",
+    "description": "Interacting with user records"
+  }],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/auth": {
+      "post": {
+        "tags": ["Auth"],
+        "security": [],
+        "summary": "Login to the API by receiving a valid JWT",
+        "requestBody": {
+          "required": true,
+          "description": "User to be logged in",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/AuthPayload"
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "$ref": "#/definitions/Authenticated" }
           },
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": { "$ref": "#/definitions/Authenticated" }
-            },
-            "400": {
-              "description": "Bad Request"
-            },
-            "404": {
-              "description": "Email not found"
-            }
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Email not found"
           }
         }
       }
     },
-    "definitions": {
-      "Authenticated": {
-        "required": [
-          "user",
-          "jwt"
-        ],
-        "properties": {
-          "user": { "type": "object" },
-          "jwt": { "type": "string" }
-        }
-      },
-      "AuthPayload": {
-        "required": [
-          "email",
-          "password"
-        ],
-        "properties": {
-          "email": { "type": "string" },
-          "password": { "type": "string" }
+    "/api/v1/calories/createLog": {
+      "post": {
+        "tags": ["Calorie Logs"],
+        "summary": "Create new Calorie Log",
+        "requestBody": {
+          "required": true,
+          "description": "data relating to the calorie log being created",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/CalorieLogPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
         }
       }
     }
+  },
+  "definitions": {
+    "Authenticated": {
+      "required": [
+        "user",
+        "jwt"
+      ],
+      "properties": {
+        "user": { "type": "object" },
+        "jwt": { "type": "string" }
+      }
+    },
+    "AuthPayload": {
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "CalorieLogPayload": {
+      "required": [
+        "userId",
+        "food",
+        "calories",
+        "timeOfDay"
+      ],
+      "properties": {
+        "userId": { "type": "string" },
+        "food": { "type": "string" },
+        "calories": { "type": "integer" },
+        "timeOfDay": { "type": "string" }
+      }
+    }
   }
+}
