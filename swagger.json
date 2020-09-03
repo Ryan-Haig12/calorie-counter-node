@@ -554,6 +554,99 @@
           }
         }
       }
+    },
+    "/api/v1/friends/addFriend": {
+      "post": {
+        "tags": ["Friends"],
+        "summary": "Send a new friend request to another user's email",
+        "requestBody": {
+          "required": true,
+          "description": "Email to send friend request to",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "newFriendEmail": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/confirmFriend": {
+      "put": {
+        "tags": ["Friends"],
+        "summary": "Confirm a friend request",
+        "requestBody": {
+          "required": true,
+          "description": "Email that sent the friend request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "confirmedFriendEmail": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/friends/deleteFriend": {
+      "delete": {
+        "tags": ["Friends"],
+        "summary": "Delete a friend request",
+        "requestBody": {
+          "required": true,
+          "description": "Email to be deleted",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "deletedFriendEmail": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
