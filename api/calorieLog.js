@@ -35,8 +35,8 @@ router.post('/createLog', [
     const newCalorieLog = await db.query(`
         insert into calorieLog (userId, food, calories, time_of_day) values ('${ body.userId }', '${ body.food }', ${ body.calories }, '${ body.timeOfDay }')
         returning
-            logid,
-            userid,
+            logid as "logId",
+            userid as "userId",
             food,
             calories,
             time_of_day as "timeOfDay",
@@ -57,8 +57,8 @@ router.get('/user/:userId', async ({ db, params }, res) => {
 
     const logs = await db.query(`
         select 
-            logId,
-            userId,
+            logid as "logId",
+            userid as "userId",
             food,
             calories,
             time_of_day as "timeOfDay"
@@ -81,8 +81,8 @@ router.get('/log/:logId', async ({ db, params }, res) => {
     }
 
     const log = await db.query(`select 
-        logId,
-        userId,
+        logid as "logId",
+        userid as "userId",
         food,
         calories,
         time_of_day as "timeOfDay" from calorielog where logId = '${ params.logId }'
@@ -126,8 +126,8 @@ router.put('/log/:logId', [
     const updatedLog = await db.query(`
         update calorielog set ${ queryBody } where logId = '${ params.logId }'
         returning
-            logid,
-            userid,
+            logid as "logId",
+            userid as "userId",
             food,
             calories,
             time_of_day as "timeOfDay",
@@ -152,8 +152,8 @@ router.delete('/log/:logId', auth, async ({ db, params }, res) => {
     const deletedLog = await db.query(`
         delete from calorielog where logid = '${ params.logId }' 
         returning
-            logid,
-            userid,
+            logid as "logId",
+            userid as "userId",
             food,
             calories,
             time_of_day as "timeOfDay",
