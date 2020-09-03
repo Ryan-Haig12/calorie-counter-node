@@ -34,8 +34,8 @@ router.post('/createLog', [
     const newExerciseLog = await db.query(`
         insert into exerciseLog (userId, activity, calories_burnt) values ('${ body.userId }', '${ body.activity }', ${ body.calories_burnt })
         returning
-            logid,
-            userid,
+            logid as "logId",
+            userid as "userId",
             activity,
             calories_burnt  as "caloriesBurnt",
             logged_at       as "loggedAt"
@@ -53,7 +53,16 @@ router.get('/user/:userId', async ({ db, params }, res) => {
         return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
     }
 
-    const logs = await db.query(`select * from exerciseLog where userid = '${ params.userId }' `)
+    const logs = await db.query(`
+        select 
+            logid as "logId",
+            userid as "userId",
+            calories_burnt  as "caloriesBurnt",
+            activity,
+            logged_at       as "loggedAt"
+        from exerciseLog 
+            where userid = '${ params.userId }'
+    `)
     if(!logs.rows.length) {
         return res.status(404).json({ err: `No exerciseLogs found for userId ${ params.userId }` })
     }
@@ -70,7 +79,14 @@ router.get('/log/:logId', async ({ db, params }, res) => {
         return res.status(400).json({ err: `logId ${ params.logId } is not a valid UUID` })
     }
 
-    const log = await db.query(`select * from exerciselog where logId = '${ params.logId }' `)
+    const log = await db.query(`
+        select 
+            logid as "logId",
+            userid as "userId",
+            calories_burnt  as "caloriesBurnt",
+            activity,
+            logged_at       as "loggedAt"
+        from exerciselog where logId = '${ params.logId }' `)
     if(!log.rows.length) {
         return res.status(404).json({ err: `No exerciseLog found for logId ${ params.logId }` })
     }
@@ -100,8 +116,8 @@ router.put('/log/:logId', auth, async ({ db, body, params }, res) => {
     const updatedLog = await db.query(`
         update exerciselog set ${ queryBody } where logId = '${ params.logId }'
         returning
-            logid,
-            userid,
+            logid as "logId",
+            userid as "userId",
             calories_burnt  as "caloriesBurnt",
             activity,
             logged_at       as "loggedAt"
@@ -125,8 +141,8 @@ router.delete('/log/:logId', auth, async ({ db, params }, res) => {
     const deletedLog = await db.query(`
         delete from exerciselog where logid = '${ params.logId }' 
         returning
-            logid,
-            userid,
+            logid as "logId",
+            userid as "userId",
             activity,
             calories_burnt  as "caloriesBurnt",
             logged_at       as "loggedAt"
@@ -181,7 +197,16 @@ router.get('/calorierange/:begin/:end', async ({ db, params }, res) => {
         return res.status(400).json({ err: `${ params.end } is not a valid number` })
     }
 
-    const logs = await db.query(`select * from exerciseLog where calories_burnt <= ${ params.end } and calories_burnt >= ${ params.begin }`)
+    const logs = await db.query(`
+        select 
+            logid as "logId",
+            userid as "userId",
+            calories_burnt  as "caloriesBurnt",
+            activity,
+            logged_at       as "loggedAt"
+        from exerciseLog 
+            where calories_burnt <= ${ params.end } and calories_burnt >= ${ params.begin }
+    `)
 
     if(!logs.rows.length) {
         return res.status(400).json({ err: `No exerciseLogs found for range ${ params.begin } to ${ params.end }` })

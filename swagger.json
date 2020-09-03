@@ -317,6 +317,243 @@
           }
         }
       }
+    },
+    "/api/v1/exercise/createLog": {
+      "post": {
+        "tags": ["Exercise Logs"],
+        "summary": "Create new Exercise Log",
+        "requestBody": {
+          "required": true,
+          "description": "data relating to the exercise log being created",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/ExerciseLogPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "array", "items": "objects" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/exercise/user/{userId}": {
+      "get": {
+        "tags": ["Exercise Logs"],
+        "summary": "Get all Exercise Logs by a userId",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "userId",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "array", "items": "objects" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/exercise/log/{logId}": {
+      "get": {
+        "tags": ["Exercise Logs"],
+        "summary": "Get a single Exercise Log by logId",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "logId",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Exercise Logs"],
+        "summary": "Update Exercise Log",
+        "parameters": [{
+          "in": "path",
+          "name": "logId",
+          "required": true
+        }],
+        "requestBody": {
+          "required": true,
+          "description": "data relating to the exercise log being updated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "activity": { "type": "string" },
+                  "calories_burnt": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Exercise Logs"],
+        "summary": "Delete Exercise Log",
+        "parameters": [{
+          "in": "path",
+          "name": "logId",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/exercise/daterange/{begin}/{end}": {
+      "get": {
+        "tags": ["Exercise Logs"],
+        "summary": "Get all exercise logs in a specific time frame",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "begin",
+          "required": true
+        }, {
+          "in": "path",
+          "name": "end",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "array", "items": "objects" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/exercise/activity/{activityName}": {
+      "get": {
+        "tags": ["Exercise Logs"],
+        "summary": "Get all exercise logs with a specific exercise name",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "activityName",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "array", "items": "objects" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/exercise/calorierange/{begin}/{end}": {
+      "get": {
+        "tags": ["Exercise Logs"],
+        "summary": "Get all exercise logs in a specific calorie range",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "begin",
+          "required": true
+        }, {
+          "in": "path",
+          "name": "end",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "array", "items": "objects" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "un-authenticated"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -352,6 +589,18 @@
         "food": { "type": "string" },
         "calories": { "type": "integer" },
         "timeOfDay": { "type": "string" }
+      }
+    },
+    "ExerciseLogPayload": {
+      "required": [
+        "userId",
+        "activity",
+        "calories_burnt"
+      ],
+      "properties": {
+        "userId": { "type": "string" },
+        "activity": { "type": "string" },
+        "calories_burnt": { "type": "integer" }
       }
     }
   }
