@@ -13,7 +13,7 @@
     "securitySchemes": {
       "bearerJWT": {
         "type": "http",
-        "description": "JWT to use protected routes. Can be acquired using the API. You only need to paste the JWT. There is no need to write \"Bearer\" inside of the input box.",
+        "description": "JWT to use protected routes. Use **POST /api/v1/users/create** to create a user in order to access protected routes. Use **POST /api/v1/auth** to authenticate your user and get your JWT. You only need to paste the JWT. There is no need to write \"Bearer\" inside of the input box.",
         "scheme": "bearer",
         "in": "header",
         "name": "Authorization"
@@ -644,6 +644,178 @@
           },
           "404": {
             "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/users/id/{userId}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get a single user by their Id",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "userId",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Email not found"
+          }
+        }
+      }
+    },
+    "/api/v1/users/userName/{userName}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get a single user by their userName",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "userName",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "array", "items": "objects" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Username not found"
+          }
+        }
+      }
+    },
+    "/api/v1/users/allData/{userId}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get all user data by their userId",
+        "security": [],
+        "parameters": [{
+          "in": "path",
+          "name": "userId",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "UserId not found"
+          }
+        }
+      }
+    },
+    "/api/v1/users/create": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create a new user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "description": "Details of user to create",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "password2": { "type": "string" },
+                  "currentWeight": { "type": "integer" },
+                  "idealWeight": { "type": "integer" },
+                  "dailyCalorieIntake": { "type": "integer" },
+                  "gender": { "type": "string" },
+                  "birthday": { "type": "string" },
+                  "age": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/v1/users/update/{userId}": {
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update a given User by their JWT",
+        "parameters": [{
+          "in": "path",
+          "name": "userId",
+          "required": true
+        }],
+        "requestBody": {
+          "required": true,
+          "description": "User data to be updated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "email": { "type": "string" },
+                  "username": { "type": "string" },
+                  "password": { "type": "string" },
+                  "password2": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/api/v1/users/delete/{userId}": {
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Delete a given User by their userId",
+        "parameters": [{
+          "in": "path",
+          "name": "userId",
+          "required": true
+        }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": { "type": "object" }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "userId not found"
           }
         }
       }

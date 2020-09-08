@@ -15,7 +15,22 @@ router.get('/id/:userId', async ({ db, params }, res) => {
         return res.status(400).json({ err: `userId ${ params.userId } is not a valid UUID` })
     }
 
-    const data = await db.query(`select * from users where id = '${ params.userId }'`)
+    const data = await db.query(`
+        select 
+            id as "userId",
+            username,
+            email,
+            created_on as "createdOn",
+            authtoken,
+            current_weight as "currentWeight",
+            age,
+            daily_calorie_intake as "dailyCalorieIntake",
+            gender,
+            ideal_weight as "idealWeight",
+            birthday
+        from users 
+            where id = '${ params.userId }'
+    `)
 
     if(!data.rows[0]) {
         return res.status(200).json({ err: `User ${ params.userId } not found` })
@@ -27,16 +42,28 @@ router.get('/id/:userId', async ({ db, params }, res) => {
 })
 
 // @route   GET /api/v1/users/userName/:userName
-// @desc    Get user from db by userName
+// @desc    Get a single user from db by userName
 // @access  Public
 router.get('/userName/:userName', async ({ db, params }, res) => {
-    const data = await db.query(`select * from users where username ilike '${ params.userName }'`)
+    const data = await db.query(`
+        select 
+            id as "userId",
+            username,
+            email,
+            created_on as "createdOn",
+            authtoken,
+            current_weight as "currentWeight",
+            age,
+            daily_calorie_intake as "dailyCalorieIntake",
+            gender,
+            ideal_weight as "idealWeight",
+            birthday
+        from users 
+            where username ilike '${ params.userName }'`)
 
     if(!data.rows[0]) {
-        res.status(200).json({ err: `User ${ params.userName } not found` })
+        res.status(404).json({ err: `User ${ params.userName } not found` })
     }
-
-    if(data.rows.length) data.rows[0].password = undefined
 
     res.status(200).json(data.rows[0])
 })
@@ -117,12 +144,18 @@ router.post('/create', [
         return res.status(400).json({ err: 'passwords must match' })
     }
 
+    // if date is invalid, return an error
+    const timestamp = Date.parse(birthday)
+    if(isNaN(timestamp)) {
+        return res.status(400).json({ err: `Birthday ${ birthday } is not a valid date` })
+    }
+
     // hash password for db storage
     const salt = await bcrypt.genSalt(8)
     const hash = await bcrypt.hash(body.password, salt)
 
     let newUser
-    console.log(username, email, currentWeight, idealWeight, age, gender, birthday)
+    //console.log(username, email, currentWeight, idealWeight, age, gender, birthday)
     try {
         // create user and return new user info
         newUser = await db.query(
@@ -187,7 +220,6 @@ router.put('/update/:userId', [
             return res.status(400).json({ err: `Username ${ body.username } already in use` })
         }
     }
-    
 
     // append all arguments into a query body
     let queryBody = ''
