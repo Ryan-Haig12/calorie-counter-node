@@ -27,7 +27,8 @@ app.use(morgan('dev'))
 app.use(cors())
 
 // initialize swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('./swagger.json', { "showExplorer": true })))
+const json = require('./swagger/swagger.js')
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(json, { "showExplorer": true }))
 
 // run prior to every request
 app.use(async (req, res, next) => {
